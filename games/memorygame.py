@@ -1,5 +1,9 @@
 import tkinter as tk
 import random
+import sys
+from game_db import record_win, get_players
+
+player1, player2 = get_players()
 
 # ---------------- CONFIG ----------------
 GRID_SIZE = 3
@@ -16,7 +20,7 @@ class SequenceGame:
         self.root.resizable(False, False)
         self.root.configure(bg=BG_COLOR)
 
-        self.players = ["Player 1", "Player 2"]
+        self.players = [player1, player2]
         self.current_player = 0
         self.scores = [0, 0]
 
@@ -33,7 +37,7 @@ class SequenceGame:
         ).pack(pady=15)
 
         self.turn_label = tk.Label(
-            root, text="Player 1's Turn",
+            root, text=f"{player1}'s Turn",
             font=("Arial", 18),
             bg=BG_COLOR, fg="white"
         )
@@ -158,15 +162,17 @@ class SequenceGame:
         p1, p2 = self.scores
 
         if p1 > p2:
-            result = "🏆 Player 1 Wins!"
+            result = f"🏆 {player1} Wins!"
+            record_win(player1)
         elif p2 > p1:
-            result = "🏆 Player 2 Wins!"
+            result = f"🏆 {player2} Wins!"
+            record_win(player2)
         else:
             result = "🤝 IT'S A TIE!"
 
         self.status.config(text=result, fg="yellow")
         self.level_label.config(
-            text=f"Final Scores → P1: {p1} | P2: {p2}"
+            text=f"Final Scores → {player1}: {p1} | {player2}: {p2}"
         )
 
     # ---------------- UTILS ----------------

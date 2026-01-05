@@ -3,24 +3,9 @@ import pygame
 import sys
 import math
 import time
-import sqlite3
-import os
+from game_db import record_win, get_players
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-conn = sqlite3.connect(os.path.join(BASE_DIR, "users.db"))
-cursor = conn.cursor()
-
-def record_win(player):
-    cursor.execute("""
-        INSERT INTO scores(player, wins)
-        VALUES (?, 1)
-        ON CONFLICT(player)
-        DO UPDATE SET wins = wins + 1
-    """, (player,))
-    conn.commit()
-
-player1 = sys.argv[1]
-player2 = sys.argv[2]
+player1, player2 = get_players()
 
 # ---------------- CONFIG ----------------
 BLUE = (0, 0, 255)
