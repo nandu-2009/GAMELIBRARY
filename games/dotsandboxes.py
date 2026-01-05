@@ -170,8 +170,12 @@ class DotsAndBoxes:
 
             # End Game Message
             if self.game_over:
-                winner = "Red Wins!" if self.scores[1] > self.scores[2] else "Blue Wins!"
-                if self.scores[1] == self.scores[2]: winner = "It's a Draw!"
+                if self.scores[1] > self.scores[2]:
+                    winner = f"{player1} Wins!"
+                elif self.scores[2] > self.scores[1]:
+                    winner = f"{player2} Wins!"
+                else:
+                    winner = "It's a Draw!"
                 win_txt = self.font.render(winner, True, BLACK)
                 self.screen.blit(win_txt, (WIDTH//2 - 60, 480))
 

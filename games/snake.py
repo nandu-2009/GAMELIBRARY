@@ -174,16 +174,16 @@ def show_winner(score1, score2):
     screen.fill(DARK_GREEN)
 
     if score1 > score2:
-        result = "Player 1 Wins!"
+        result = f"{player1} Wins!"
         record_win(player1)
     elif score2 > score1:
-        result = "Player 2 Wins!"
+        result = f"{player2} Wins!"
         record_win(player2)
     else:
         result = "It's a Draw!"
 
     title = big_font.render(result, True, WHITE)
-    scores = font.render(f"P1: {score1}   P2: {score2}", True, WHITE)
+    scores = font.render(f"{player1}: {score1}   {player2}: {score2}", True, WHITE)
     prompt = font.render("Press R to Restart or ESC to Quit", True, WHITE)
 
     screen.blit(title, (WIDTH // 2 - title.get_width() // 2, 240))

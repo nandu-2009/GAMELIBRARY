@@ -119,7 +119,8 @@ while animating:
 
     if gameover:
         if winner:
-            msg = f"PLAYER {winner} WINS!"
+            winner_name = player1 if winner == 1 else player2
+            msg = f"{winner_name} WINS!"
         else:
             msg = "DRAW!"
 

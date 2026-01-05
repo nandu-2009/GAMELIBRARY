@@ -237,14 +237,14 @@ while running:
         screen.blit(font.render(f"Player {current_player}", True, WHITE), (10, 30))
     else:
         title = big_font.render("GAME OVER", True, RED)
-        p1 = font.render(f"Player 1 Score: {score_p1}", True, WHITE)
-        p2 = font.render(f"Player 2 Score: {score_p2}", True, WHITE)
+        p1 = font.render(f"{player1} Score: {score_p1}", True, WHITE)
+        p2 = font.render(f"{player2} Score: {score_p2}", True, WHITE)
 
         if score_p1 > score_p2:
-            winner = "Player 1 Wins!"
+            winner = f"{player1} Wins!"
             record_win(player1)
         elif score_p2 > score_p1:
-            winner = "Player 2 Wins!"
+            winner = f"{player2} Wins!"
             record_win(player2)
         else:
             winner = "It's a Tie!"

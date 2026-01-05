@@ -115,22 +115,23 @@ class MazeGame:
                         waiting = False
 
     def run(self):
-        self.wait_for_ready("PLAYER 1: Get Ready!")
+        self.wait_for_ready(f"{player1}: Get Ready!")
         p1_score = self.play_turn(1, P1_COLOR)
         
-        self.wait_for_ready(f"P1 Time: {p1_score}s. PLAYER 2: Ready?")
+        self.wait_for_ready(f"{player1} Time: {p1_score}s. {player2}: Ready?")
         p2_score = self.play_turn(2, P2_COLOR)
 
         self.screen.fill(BLACK)
-        winner = "Player 1 Wins!" if p1_score < p2_score else "Player 2 Wins!"
-        if p1_score == p2_score: winner = "It's a Tie!"
-        
         if p1_score < p2_score:
+            winner = f"{player1} Wins!"
             record_win(player1)
         elif p2_score < p1_score:
+            winner = f"{player2} Wins!"
             record_win(player2)
-        
-        res_text = self.font.render(f"P1: {p1_score}s | P2: {p2_score}s", True, WHITE)
+        else:
+            winner = "It's a Tie!"
+
+        res_text = self.font.render(f"{player1}: {p1_score}s | {player2}: {p2_score}s", True, WHITE)
         win_text = self.font.render(winner, True, (0, 255, 0))
         
         self.screen.blit(res_text, (200, 250))

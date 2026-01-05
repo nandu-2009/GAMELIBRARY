@@ -98,11 +98,11 @@ def key_press(event):
     round_active = False
 
     if p1 >= TARGET:
-        end_game("Player 1 Wins!")
+        end_game(f"{player1} Wins!")
         record_win(player1)
         return
     if p2 >= TARGET:
-        end_game("Player 2 Wins!")
+        end_game(f"{player2} Wins!")
         record_win(player2)
         return
 

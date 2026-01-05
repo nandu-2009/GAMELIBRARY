@@ -74,7 +74,7 @@ title.write("   P O N G   ", align="center", font=("Courier", 36, "bold"))
 # Rules text
 start_text.goto(0, 40)
 start_text.write(
-    "Player 1 :  W  /  S\nPlayer 2 :  ↑  /  ↓\n\n    First to 5 Wins",
+    f"{player1} :  W  /  S\n{player2} :  ↑  /  ↓\n\n    First to 5 Wins",
     align="center",
     font=("Courier", 22, "bold")
 )
@@ -195,7 +195,7 @@ while True:
         else:
             record_win(player2)
         score_display.clear()
-        winner = "Player 1" if score_p1 == 5 else "Player 2"
+        winner = player1 if score_p1 == 5 else player2
         score_display.goto(0, 0)
         score_display.write(
             f"{winner} Wins!",

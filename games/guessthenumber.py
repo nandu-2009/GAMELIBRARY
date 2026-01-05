@@ -62,25 +62,25 @@ def switch_player():
 
     if current_player == 1:
         current_player = 2
-        label_turn.config(text="Player 2's Turn", fg="purple")
-        label_result.config(text="Player 2: Guess your number!")
+        label_turn.config(text=f"{player2}'s Turn", fg="purple")
+        label_result.config(text=f"{player2}: Guess your number!")
     else:
         declare_winner()
 
 def declare_winner():
     if attempts_p1 < attempts_p2:
-        winner = "Player 1"
+        winner = player1
         record_win(player1)
     elif attempts_p2 < attempts_p1:
-        winner = "Player 2"
+        winner = player2
         record_win(player2)
     else:
         winner = "It's a Tie!"
 
     messagebox.showinfo(
         "Game Over",
-        f"Player 1 Attempts: {attempts_p1}\n"
-        f"Player 2 Attempts: {attempts_p2}\n\n"
+        f"{player1} Attempts: {attempts_p1}\n"
+        f"{player2} Attempts: {attempts_p2}\n\n"
         f"Winner: {winner}"
     )
     reset_game()
@@ -94,7 +94,7 @@ def reset_game():
     attempts_p2 = 0
     current_player = 1
 
-    label_turn.config(text="Player 1's Turn", fg="green")
+    label_turn.config(text=f"{player1}'s Turn", fg="green")
     label_result.config(
         text="A number between 1 and 100 has been chosen",
         fg="darkblue"

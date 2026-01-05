@@ -26,7 +26,7 @@ def check_win():
         if board[a] == board[b] == board[c] != "":
             winner = player1 if board[a] == "X" else player2
             record_win(winner)
-            status.config(text=f"{board[a]} wins")
+            status.config(text=f"{winner} wins!")
             disable()
             game_over = True
             return
