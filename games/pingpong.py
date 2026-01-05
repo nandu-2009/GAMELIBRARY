@@ -204,6 +204,10 @@ while True:
 
     # Win condition
     if score_p1 == 5 or score_p2 == 5:
+        if score_p1 == 5:
+            record_win(player1)
+        else:
+            record_win(player2)
         score_display.clear()
         winner = "Player 1" if score_p1 == 5 else "Player 2"
         score_display.goto(0, 0)

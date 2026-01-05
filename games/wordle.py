@@ -174,12 +174,14 @@ while animating:
                             guesses_p1.append(input)
                             if input == answer:
                                 winner = 1
+                                record_win(player1)
                                 gameover = True
                             current_player = 2
                         else:
                             guesses_p2.append(input)
                             if input == answer:
                                 winner = 2
+                                record_win(player2)
                                 gameover = True
                             current_player = 1
 

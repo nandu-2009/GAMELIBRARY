@@ -119,8 +119,10 @@ while running:
 
         if score_p1 > score_p2:
             winner = "Player 1 Wins!"
+            record_win(player1)
         elif score_p2 > score_p1:
             winner = "Player 2 Wins!"
+            record_win(player2)
         else:
             winner = "It's a Tie!"
 

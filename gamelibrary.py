@@ -172,21 +172,17 @@ class ArcadeApp:
         tk.Label(self.main, text=f"{self.player1}  vs  {self.player2}",
                  font=("Arial", 16), bg="#1e1e2e", fg="white").pack(pady=5)
 
-        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player1,))
-        p1 = cursor.fetchone()
-        p1_score = p1[0] if p1 else 0
-
-        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player2,))
-        p2 = cursor.fetchone()
-        p2_score = p2[0] if p2 else 0
-
-        tk.Label(
+        self.score_label = tk.Label(
             self.main,
-            text=f"{self.player1}: {p1_score} wins   |   {self.player2}: {p2_score} wins",
+            text=self.get_score_text(),
             font=("Arial", 14, "bold"),
             bg="#1e1e2e",
             fg="#FFD700"
-        ).pack(pady=8)
+        )
+        self.score_label.pack(pady=8)
+
+        tk.Button(self.main, text="Refresh Scores", command=self.refresh_scores,
+                  bg="#4CAF50", fg="white").pack(pady=5)
 
         grid = tk.Frame(self.main, bg="#1e1e2e")
         grid.pack(expand=True, fill="both", padx=30, pady=30)
@@ -220,6 +216,20 @@ class ArcadeApp:
 
             tk.Label(card, text=name, fg="white",
                      bg="#2a2a3d", font=("Arial", 16, "bold")).pack(pady=5)
+
+    def get_score_text(self):
+        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player1,))
+        p1 = cursor.fetchone()
+        p1_score = p1[0] if p1 else 0
+
+        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player2,))
+        p2 = cursor.fetchone()
+        p2_score = p2[0] if p2 else 0
+
+        return f"{self.player1}: {p1_score} wins   |   {self.player2}: {p2_score} wins"
+
+    def refresh_scores(self):
+        self.score_label.config(text=self.get_score_text())
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":

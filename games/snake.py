@@ -189,8 +189,10 @@ def show_winner(score1, score2):
 
     if score1 > score2:
         result = "Player 1 Wins!"
+        record_win(player1)
     elif score2 > score1:
         result = "Player 2 Wins!"
+        record_win(player2)
     else:
         result = "It's a Draw!"
 
