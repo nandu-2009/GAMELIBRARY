@@ -154,6 +154,8 @@ def main():
                     drop_piece(board, row, col, piece)
 
                     if winning_move(board, piece):
+                        winner = player1 if piece == 1 else player2
+                        record_win(winner)
                         label = font.render(
                             f"Player {piece} Wins!",
                             True, color

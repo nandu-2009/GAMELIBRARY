@@ -119,6 +119,10 @@ class DotsAndBoxes:
                         
                         if self.scores[1] + self.scores[2] == GRID_SIZE**2:
                             self.game_over = True
+                            if self.scores[1] > self.scores[2]:
+                                record_win(player1)
+                            elif self.scores[2] > self.scores[1]:
+                                record_win(player2)
 
                 # Restart Button Click
                 if event.type == pygame.MOUSEBUTTONDOWN:

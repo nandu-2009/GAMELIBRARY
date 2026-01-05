@@ -113,9 +113,11 @@ def key_press(event):
 
     if p1 >= TARGET:
         end_game("Player 1 Wins!")
+        record_win(player1)
         return
     if p2 >= TARGET:
         end_game("Player 2 Wins!")
+        record_win(player2)
         return
 
     root.after(1200, start_round)

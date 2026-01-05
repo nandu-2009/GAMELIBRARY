@@ -139,6 +139,11 @@ class MazeGame:
         winner = "Player 1 Wins!" if p1_score < p2_score else "Player 2 Wins!"
         if p1_score == p2_score: winner = "It's a Tie!"
         
+        if p1_score < p2_score:
+            record_win(player1)
+        elif p2_score < p1_score:
+            record_win(player2)
+        
         res_text = self.font.render(f"P1: {p1_score}s | P2: {p2_score}s", True, WHITE)
         win_text = self.font.render(winner, True, (0, 255, 0))
         

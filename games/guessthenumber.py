@@ -84,8 +84,10 @@ def switch_player():
 def declare_winner():
     if attempts_p1 < attempts_p2:
         winner = "Player 1"
+        record_win(player1)
     elif attempts_p2 < attempts_p1:
         winner = "Player 2"
+        record_win(player2)
     else:
         winner = "It's a Tie!"
 
