@@ -1,56 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
-import sqlite3
-import hashlib
 import os
 import subprocess
 import sys
-
-
-
-# ---------------- PATHS ----------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-GAMES_DIR = os.path.join(BASE_DIR, "games")
-ICONS_DIR = os.path.join(BASE_DIR, "icons")
-
-# ---------------- DATABASE ----------------
-conn = sqlite3.connect("users.db")
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT
-)
-""")
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS scores (
-    player TEXT PRIMARY KEY,
-    wins INTEGER DEFAULT 0
-)
-""")
-
-conn.commit()
-
-def hash_password(p):
-    return hashlib.sha256(p.encode()).hexdigest()
-
-# ---------------- GAME LIST ----------------
-GAMES = [
-    ("Guess", "guessthenumber"),
-    ("Connect 4", "connect4"),
-    ("Ping Pong", "pingpong"),
-    ("Tic Tac Toe", "tictactoe"),
-    ("Snake", "snake"),
-    ("Asteroids", "asteroids"),
-    ("Flappy", "flappybird"),
-    ("Dots", "dotsandboxes"),
-    ("Wordle", "wordle"),
-    ("Maze", "mazegame"),
-    ("Smash keys", "smashkeys"),
-    ("Memory game","memorygame")]
+from database import Database
+from config import GAMES_DIR, ICONS_DIR, GAMES, BG_COLOR, FG_COLOR, ACCENT_COLOR, BUTTON_BG, BUTTON_FG
 
 # ---------------- MAIN APP ----------------
 class ArcadeApp:
@@ -60,11 +14,12 @@ class ArcadeApp:
         self.root.geometry("1200x800")
         self.root.minsize(1000, 700)
 
+        self.db = Database()
         self.images = {}
         self.player1 = ""
         self.player2 = ""
 
-        self.main = tk.Frame(root, bg="#f4f4f4")
+        self.main = tk.Frame(root, bg=BG_COLOR)
         self.main.pack(expand=True, fill="both")
 
         self.show_login()
@@ -77,26 +32,25 @@ class ArcadeApp:
     # ---------------- LOGIN ----------------
     def show_login(self):
         self.clear()
-        self.root.configure(bg="#f4f4f4")
-        self.main.configure(bg="#f4f4f4")
+        self.root.configure(bg=BG_COLOR)
+        self.main.configure(bg=BG_COLOR)
 
-        tk.Label(self.main, text="Login", font=("Arial", 26, "bold"), bg="#f4f4f4").pack(pady=30)
-        tk.Label(self.main, text="Username", bg="#f4f4f4").pack()
+        tk.Label(self.main, text="Login", font=("Arial", 26, "bold"), bg=BG_COLOR, fg=FG_COLOR).pack(pady=30)
+        tk.Label(self.main, text="Username", bg=BG_COLOR, fg=FG_COLOR).pack()
         self.user = tk.Entry(self.main, font=("Arial", 14), width=25)
         self.user.pack(pady=10)
 
-        tk.Label(self.main, text="Password", bg="#f4f4f4").pack()
+        tk.Label(self.main, text="Password", bg=BG_COLOR, fg=FG_COLOR).pack()
         self.pwd = tk.Entry(self.main, font=("Arial", 14), show="*", width=25)
         self.pwd.pack(pady=10)
 
-        tk.Button(self.main, text="Login", width=20, bg="#4CAF50", fg="white", command=self.login).pack(pady=10)
-        tk.Button(self.main, text="Create Account", bg="#f4f4f4", fg="blue", command=self.show_signup).pack()
+        tk.Button(self.main, text="Login", width=20, bg=BUTTON_BG, fg=BUTTON_FG, command=self.login).pack(pady=10)
+        tk.Button(self.main, text="Create Account", bg=BG_COLOR, fg="blue", command=self.show_signup).pack()
 
     def login(self):
         u = self.user.get()
-        p = hash_password(self.pwd.get())
-        cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (u, p))
-        if cursor.fetchone():
+        p = self.pwd.get()
+        if self.db.authenticate_user(u, p):
             self.show_player_entry()
         else:
             messagebox.showerror("Error", "Invalid login")
@@ -104,41 +58,38 @@ class ArcadeApp:
     # ---------------- SIGNUP ----------------
     def show_signup(self):
         self.clear()
-        tk.Label(self.main, text="Sign Up", font=("Arial", 26, "bold")).pack(pady=30)
+        tk.Label(self.main, text="Sign Up", font=("Arial", 26, "bold"), bg=BG_COLOR, fg=FG_COLOR).pack(pady=30)
         self.new_user = tk.Entry(self.main, font=("Arial", 14), width=25)
         self.new_user.pack(pady=10)
         self.new_pwd = tk.Entry(self.main, font=("Arial", 14), show="*", width=25)
         self.new_pwd.pack(pady=10)
 
-        tk.Button(self.main, text="Create Account", width=20, command=self.signup).pack(pady=10)
+        tk.Button(self.main, text="Create Account", width=20, bg=BUTTON_BG, fg=BUTTON_FG, command=self.signup).pack(pady=10)
         tk.Button(self.main, text="Back", command=self.show_login).pack()
 
     def signup(self):
-        try:
-            cursor.execute(
-                "INSERT INTO users VALUES (NULL, ?, ?)",
-                (self.new_user.get(), hash_password(self.new_pwd.get()))
-            )
-            conn.commit()
+        username = self.new_user.get()
+        password = self.new_pwd.get()
+        if self.db.create_user(username, password):
             messagebox.showinfo("Success", "Account created")
             self.show_login()
-        except sqlite3.IntegrityError:
+        else:
             messagebox.showerror("Error", "Username already exists")
 
     # ---------------- PLAYER ENTRY ----------------
     def show_player_entry(self):
         self.clear()
-        tk.Label(self.main, text="Enter Player Names", font=("Arial", 26, "bold")).pack(pady=30)
+        tk.Label(self.main, text="Enter Player Names", font=("Arial", 26, "bold"), bg=BG_COLOR, fg=FG_COLOR).pack(pady=30)
 
-        tk.Label(self.main, text="Player 1").pack()
+        tk.Label(self.main, text="Player 1", bg=BG_COLOR, fg=FG_COLOR).pack()
         self.p1_entry = tk.Entry(self.main, font=("Arial", 14), width=25)
         self.p1_entry.pack(pady=10)
 
-        tk.Label(self.main, text="Player 2").pack()
+        tk.Label(self.main, text="Player 2", bg=BG_COLOR, fg=FG_COLOR).pack()
         self.p2_entry = tk.Entry(self.main, font=("Arial", 14), width=25)
         self.p2_entry.pack(pady=10)
 
-        tk.Button(self.main, text="Continue", width=20, command=self.save_players).pack(pady=20)
+        tk.Button(self.main, text="Continue", width=20, bg=BUTTON_BG, fg=BUTTON_FG, command=self.save_players).pack(pady=20)
 
     def save_players(self):
         self.player1 = self.p1_entry.get().strip()
@@ -163,28 +114,28 @@ class ArcadeApp:
     # ---------------- GAME LIBRARY ----------------
     def show_library(self):
         self.clear()
-        self.root.configure(bg="#1e1e2e")
-        self.main.configure(bg="#1e1e2e")
+        self.root.configure(bg=BG_COLOR)
+        self.main.configure(bg=BG_COLOR)
 
         tk.Label(self.main, text="🎮 GAME ARCADE", font=("Arial", 28, "bold"),
-                 bg="#1e1e2e", fg="white").pack(pady=15)
+                 bg=BG_COLOR, fg=FG_COLOR).pack(pady=15)
 
         tk.Label(self.main, text=f"{self.player1}  vs  {self.player2}",
-                 font=("Arial", 16), bg="#1e1e2e", fg="white").pack(pady=5)
+                 font=("Arial", 16), bg=BG_COLOR, fg=FG_COLOR).pack(pady=5)
 
         self.score_label = tk.Label(
             self.main,
             text=self.get_score_text(),
             font=("Arial", 14, "bold"),
-            bg="#1e1e2e",
-            fg="#FFD700"
+            bg=BG_COLOR,
+            fg=ACCENT_COLOR
         )
         self.score_label.pack(pady=8)
 
         tk.Button(self.main, text="Refresh Scores", command=self.refresh_scores,
-                  bg="#4CAF50", fg="white").pack(pady=5)
+                  bg=BUTTON_BG, fg=BUTTON_FG).pack(pady=5)
 
-        grid = tk.Frame(self.main, bg="#1e1e2e")
+        grid = tk.Frame(self.main, bg=BG_COLOR)
         grid.pack(expand=True, fill="both", padx=30, pady=30)
 
         COLS = 4
@@ -214,18 +165,12 @@ class ArcadeApp:
                     command=lambda g=key: self.launch_game(g)
                 ).pack(expand=True, pady=10)
 
-            tk.Label(card, text=name, fg="white",
+            tk.Label(card, text=name, fg=FG_COLOR,
                      bg="#2a2a3d", font=("Arial", 16, "bold")).pack(pady=5)
 
     def get_score_text(self):
-        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player1,))
-        p1 = cursor.fetchone()
-        p1_score = p1[0] if p1 else 0
-
-        cursor.execute("SELECT wins FROM scores WHERE player=?", (self.player2,))
-        p2 = cursor.fetchone()
-        p2_score = p2[0] if p2 else 0
-
+        p1_score = self.db.get_player_score(self.player1)
+        p2_score = self.db.get_player_score(self.player2)
         return f"{self.player1}: {p1_score} wins   |   {self.player2}: {p2_score} wins"
 
     def refresh_scores(self):
