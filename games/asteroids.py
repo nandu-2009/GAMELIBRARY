@@ -10,6 +10,7 @@ pygame.init()
 # ---------------- CONSTANTS ----------------
 WIDTH, HEIGHT = 800, 600
 FPS = 60
+
 PLAYER_SPEED = 7
 BULLET_SPEED = 10
 STAR_COUNT = 100
@@ -50,6 +51,56 @@ class Player(pygame.sprite.Sprite):
             bullets.add(bullet)
 
 
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((40,40))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect(
+            center=(random.randint(40, WIDTH-40), -40)
+        )
+        self.speed = random.randint(2,4)
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.top > HEIGHT:
+            self.kill()
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((5,15))
+        self.image.fill(BLUE)
+        self.rect = self.image.get_rect(center=(x,y))
+
+    def update(self):
+        self.rect.y -= BULLET_SPEED
+        if self.rect.bottom < 0:
+            self.kill()
+
+
+class Star:
+    def __init__(self):
+        self.x = random.randint(0, WIDTH)
+        self.y = random.randint(0, HEIGHT)
+        self.speed = random.randint(1,3)
+
+    def update(self):
+        self.y += self.speed
+        if self.y > HEIGHT:
+            self.y = 0
+            self.x = random.randint(0, WIDTH)
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, WHITE, (self.x, self.y), 2)
+
+# ---------------- UI FUNCTIONS ----------------
+def draw_health_bar(surface, x, y, health, max_health):
+    fill = (health / max_health) * 100
+    pygame.draw.rect(surface, GREEN, (x, y, fill, 10))
+    pygame.draw.rect(surface, WHITE, (x, y, 100, 10), 2)
+
 def show_player_transition(player_num):
     screen.fill(BLACK)
 
@@ -74,70 +125,14 @@ def show_player_transition(player_num):
                 waiting = False
 
 
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.Surface((40,40))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect(
-            center=(random.randint(40, WIDTH-40), -40)
-        )
-        self.speed = random.randint(2,4)
-
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.top > HEIGHT:
-            self.kill()
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.Surface((5,15))
-        self.image.fill(BLUE)
-        self.rect = self.image.get_rect(center=(x,y))
-
-    def update(self):
-        self.rect.y -= BULLET_SPEED
-        if self.rect.bottom < 0:
-            self.kill()
-
-class Star:
-    def __init__(self):
-        self.x = random.randint(0, WIDTH)
-        self.y = random.randint(0, HEIGHT)
-        self.speed = random.randint(1,3)
-
-    def update(self):
-        self.y += self.speed
-        if self.y > HEIGHT:
-            self.y = 0
-            self.x = random.randint(0, WIDTH)
-
-    def draw(self, screen):
-        pygame.draw.circle(screen, WHITE, (self.x, self.y), 2)
-
-# ---------------- UI FUNCTIONS ----------------
-def draw_health_bar(surface, x, y, health, max_health):
-    fill = (health / max_health) * 100
-    pygame.draw.rect(surface, GREEN, (x, y, fill, 10))
-    pygame.draw.rect(surface, WHITE, (x, y, 100, 10), 2)
-
 def show_start_screen():
     screen.fill(BLACK)
 
     title = big_font.render("SPACE SHOOTER", True, WHITE)
-    rules1 = font.render("Arrow Keys  -  Move", True, WHITE)
-    rules2 = font.render("SPACE       -  Shoot", True, WHITE)
-    rules3 = font.render("2 Players take turns", True, WHITE)
-    rules4 = font.render("Higher score wins", True, WHITE)
     start = font.render("Press ANY KEY to Start", True, YELLOW)
 
-    screen.blit(title, (WIDTH//2 - title.get_width()//2, 120))
-    screen.blit(rules1, (WIDTH//2 - rules1.get_width()//2, 260))
-    screen.blit(rules2, (WIDTH//2 - rules2.get_width()//2, 300))
-    screen.blit(rules3, (WIDTH//2 - rules3.get_width()//2, 340))
-    screen.blit(rules4, (WIDTH//2 - rules4.get_width()//2, 380))
-    screen.blit(start, (WIDTH//2 - start.get_width()//2, 460))
+    screen.blit(title, (WIDTH//2 - title.get_width()//2, 200))
+    screen.blit(start, (WIDTH//2 - start.get_width()//2, 300))
 
     pygame.display.flip()
 
@@ -176,6 +171,9 @@ score_p1 = 0
 score_p2 = 0
 game_over = False
 
+# ✅ FIX: prevents multiple database writes
+winner_recorded = False
+
 reset_round()
 show_start_screen()
 
@@ -187,15 +185,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and not game_over:
                 player.shoot()
+
             if event.key == pygame.K_ESCAPE:
                 running = False
+
             if event.key == pygame.K_r and game_over:
                 current_player = 1
                 score_p1 = score_p2 = 0
                 game_over = False
+                winner_recorded = False   # ✅ reset flag
                 reset_round()
 
     if not game_over:
@@ -226,6 +228,7 @@ while running:
 
     # ---------------- DRAW ----------------
     screen.fill(BLACK)
+
     for star in stars:
         star.draw(screen)
 
@@ -235,6 +238,7 @@ while running:
         draw_health_bar(screen, 10, 10, player.health, player.max_health)
         screen.blit(font.render(f"Score: {score}", True, WHITE), (650, 10))
         screen.blit(font.render(f"Player {current_player}", True, WHITE), (10, 30))
+
     else:
         title = big_font.render("GAME OVER", True, RED)
         p1 = font.render(f"{player1} Score: {score_p1}", True, WHITE)
@@ -242,10 +246,16 @@ while running:
 
         if score_p1 > score_p2:
             winner = f"{player1} Wins!"
-            record_win(player1)
+            if not winner_recorded:
+                record_win(player1)
+                winner_recorded = True
+
         elif score_p2 > score_p1:
             winner = f"{player2} Wins!"
-            record_win(player2)
+            if not winner_recorded:
+                record_win(player2)
+                winner_recorded = True
+
         else:
             winner = "It's a Tie!"
 
@@ -262,4 +272,3 @@ while running:
 
 pygame.quit()
 sys.exit()
-
