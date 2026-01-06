@@ -23,6 +23,7 @@ left_paddle.shapesize(stretch_wid=6, stretch_len=1)
 left_paddle.penup()
 left_paddle.goto(-350, 0)
 left_paddle.hideturtle()
+PADDLE_SPEED = 10
 
 # Right paddle (Player 2)
 right_paddle = turtle.Turtle()
@@ -41,9 +42,11 @@ ball.shape("circle")
 ball.color("red")
 ball.penup()
 ball.goto(0, 0)
-ball.dx = 2
-ball.dy = -2
 ball.hideturtle()
+BALL_SPEED_X = 3
+BALL_SPEED_Y = 3
+ball.dx = BALL_SPEED_X
+ball.dy = BALL_SPEED_Y
 
 # Score
 score_p1 = 0
@@ -74,10 +77,18 @@ title.write("   P O N G   ", align="center", font=("Courier", 36, "bold"))
 # Rules text
 start_text.goto(0, 40)
 start_text.write(
-    f"{player1} :  W  /  S\n{player2} :  ↑  /  ↓\n\n    First to 5 Wins",
+    f"{player1} :  W / S\n{player2} :  ↑ / ↓\n\n   First to 5 Wins",
     align="center",
     font=("Courier", 22, "bold")
 )
+
+#Keys dictionary
+keys = {
+    "w": False,
+    "s": False,
+    "Up": False,
+    "Down": False
+}
 
 # Press to start message
 press_text = turtle.Turtle()
@@ -95,22 +106,22 @@ press_text.write(
 def left_paddle_up():
     y = left_paddle.ycor()
     if y < 250:
-        left_paddle.sety(y + 20)
+        left_paddle.sety(y + PADDLE_SPEED)
 
 def left_paddle_down():
     y = left_paddle.ycor()
     if y > -240:
-        left_paddle.sety(y - 20)
+        left_paddle.sety(y - PADDLE_SPEED)
 
 def right_paddle_up():
     y = right_paddle.ycor()
     if y < 250:
-        right_paddle.sety(y + 20)
+        right_paddle.sety(y + PADDLE_SPEED)
 
 def right_paddle_down():
     y = right_paddle.ycor()
     if y > -240:
-        right_paddle.sety(y - 20)
+        right_paddle.sety(y - PADDLE_SPEED)
 
 # Start game
 def start_game():
@@ -129,16 +140,22 @@ def start_game():
         font=("Courier", 24, "bold")
     )
 
+
+def key_press(key):
+    keys[key] = True
+
+def key_release(key):
+    keys[key] = False
+
+screen.listen()
+for key in keys:
+    screen.onkeypress(lambda k=key: key_press(k), key)
+    screen.onkeyrelease(lambda k=key: key_release(k), key)
+screen.onkeypress(start_game, "space")
+
+
 def exit_game():
     screen.bye()
-
-# Keyboard bindings
-screen.listen()
-screen.onkeypress(left_paddle_up, "w")
-screen.onkeypress(left_paddle_down, "s")
-screen.onkeypress(right_paddle_up, "Up")
-screen.onkeypress(right_paddle_down, "Down")
-screen.onkeypress(start_game, "space")
 
 # Main game loop
 while True:
@@ -147,7 +164,7 @@ while True:
     if not screen.game_started:
         continue
 
-    time.sleep(0.005)
+    time.sleep(0.01)
 
     # Move ball
     ball.setx(ball.xcor() + ball.dx)
@@ -181,12 +198,36 @@ while True:
             font=("Courier", 24, "bold")
         )
 
-    # Paddle collision
-    if (350 > ball.xcor() > 340) and (right_paddle.ycor() + 50 > ball.ycor() > right_paddle.ycor() - 50):
+    # Right paddle collision
+    if (
+        ball.dx > 0 and
+        ball.xcor() >= 330 and
+        ball.xcor() <= 350 and
+        abs(ball.ycor() - right_paddle.ycor()) <= 60
+    ):
+        ball.setx(330)          # push ball outside paddle
         ball.dx *= -1
 
-    if (-350 < ball.xcor() < -340) and (left_paddle.ycor() + 50 > ball.ycor() > left_paddle.ycor() - 50):
+    # Left paddle collision
+    if (
+        ball.dx < 0 and
+        ball.xcor() <= -330 and
+        ball.xcor() >= -350 and
+        abs(ball.ycor() - left_paddle.ycor()) <= 60
+    ):
+        ball.setx(-330)         # push ball outside paddle
         ball.dx *= -1
+
+    #On Pressing the key
+    if screen.game_started:
+        if keys["w"]:
+            left_paddle_up()
+        if keys["s"]:
+            left_paddle_down()
+        if keys["Up"]:
+            right_paddle_up()
+        if keys["Down"]:
+            right_paddle_down()
 
     # Win condition
     if score_p1 == 5 or score_p2 == 5:
@@ -210,4 +251,3 @@ while True:
         )
         screen.onkeypress(exit_game, "space")
         break
-

@@ -40,6 +40,7 @@ score_p2 = 0
 
 game_started = False
 game_over = False
+winner_recorded = False   # ⭐ FIX FLAG
 
 # ---------------- FUNCTIONS ----------------
 def create_pipe():
@@ -93,6 +94,7 @@ while running:
                 score_p1 = 0
                 score_p2 = 0
                 game_over = False
+                winner_recorded = False   # ⭐ RESET FLAG
                 reset_round()
 
     # -------- GAME OVER SCREEN --------
@@ -105,10 +107,14 @@ while running:
 
         if score_p1 > score_p2:
             winner = f"{player1} Wins!"
-            record_win(player1)
+            if not winner_recorded:
+                record_win(player1)
+                winner_recorded = True
         elif score_p2 > score_p1:
             winner = f"{player2} Wins!"
-            record_win(player2)
+            if not winner_recorded:
+                record_win(player2)
+                winner_recorded = True
         else:
             winner = "It's a Tie!"
 
@@ -147,7 +153,6 @@ while running:
     velocity += gravity
     bird_y += velocity
 
-    # Move pipes
     for pipe in pipes:
         pipe["x"] -= pipe_speed
 
